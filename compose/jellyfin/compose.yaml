@@ -176,19 +176,19 @@ services:
         #   - 8191:8191
         restart: unless-stopped
 
-    #jellyseerr:
-    #image: fallenbagel/jellyseerr:latest
-    #container_name: jellyseerr
-    #environment:
-    #- TZ=${TIMEZONE}
-    #- LOG_LEVEL=info
-    #ports:
-    #- "5055:5055"
-    #volumes:
-    #- ./jellyseerr:/app/config
-    #restart: unless-stopped
-    #Qdepends_on:
-    #- gluetun
-    #- jellyfin
-    #- sonarr
-    #- radarr
+    jellyseerr:
+        image: fallenbagel/jellyseerr:latest
+        container_name: jellyseerr
+        environment:
+            - TZ=${TIMEZONE}
+            - LOG_LEVEL=info
+        ports:
+            - "5055:5055"
+        volumes:
+            - ./jellyseerr:/app/config
+        restart: unless-stopped
+        depends_on:
+            - gluetun
+            - jellyfin
+            - sonarr
+            - radarr
