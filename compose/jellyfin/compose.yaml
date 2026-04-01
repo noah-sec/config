@@ -1,0 +1,194 @@
+services:
+    jellyfin:
+        image: jellyfin/jellyfin
+        container_name: jellyfin
+        user: 1000:1000
+        ports:
+            - 8096:8096/tcp
+            #- 7359:7359/udp
+        volumes:
+            - ./jellyfin-config:/config
+            - ./jellyfin-cache:/cache
+            - ${DATA_LOCATION}:/data
+        restart: "unless-stopped"
+        # Optional - may be necessary for docker healthcheck to pass if running in host network mode
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+        environment:
+            #- JELLYFIN_PublishedServerUrl=${JELLYFIN_URL}
+            - TZ=${TIMEZONE}
+            # Helps Jellyfin handle the proxy headers from tsdproxy
+            - JELLYFIN_ReverseProxyClientIPHeader=X-Forwarded-For
+            - /dev/dri:/dev/dri
+
+    gluetun:
+        image: qmcgaw/gluetun
+        # container_name: gluetun
+        # line above must be uncommented to allow external containers to connect.
+        # See https://github.com/qdm12/gluetun-wiki/blob/main/setup/connect-a-container-to-gluetun.md#external-container-to-gluetun
+        cap_add:
+            - NET_ADMIN
+        devices:
+            - /dev/net/tun:/dev/net/tun
+        ports:
+            - 8071:8071 # qbittorrent web UI
+            - 6881:6881 # torrent port
+            - 6881:6881/udp
+            - 7878:7878 # radarr
+            - 8989:8989 # sonarr
+            - 8686:8686 # lidarr
+            - 6767:6767 # bazarr
+            - 9696:9696 # prowlarr
+            - 8181:8181 # flaresolverr
+        volumes:
+            - ./gluetun:/gluetun
+        environment:
+            # See https://github.com/qdm12/gluetun-wiki/tree/main/setup#setup
+            - VPN_SERVICE_PROVIDER=surfshark
+            - VPN_TYPE=openvpn
+            # OpenVPN:
+            - OPENVPN_USER=${SURFSHARK_USERNAME}
+            - OPENVPN_PASSWORD=${SURFSHARK_PASSWORD}
+            # Wireguard:
+            #- WIREGUARD_PRIVATE_KEY=${SURFSHARK_KEY}
+            #- WIREGUARD_ADDRESSES=${SURFSHARK_ADDRESSES}
+            - SERVER_COUNTRIES=United States
+            # Timezone for accurate log times
+            - TZ=${TIMEZONE}
+            # Server list updater
+            # See https://github.com/qdm12/gluetun-wiki/blob/main/setup/servers.md#update-the-vpn-servers-list
+            #- UPDATER_PERIOD=
+
+    qbittorrent:
+        image: lscr.io/linuxserver/qbittorrent:latest
+        container_name: qbittorrent
+        network_mode: "service:gluetun" # routes traffic through gluetun
+        depends_on:
+            - gluetun
+        environment:
+            - PUID=1000
+            - PGID=1000
+            - TZ=${TIMEZONE}
+            - WEBUI_PORT=8071
+            - TORRENTING_PORT=6881
+        volumes:
+            - ./qbittorrent:/config
+            - ${DATA_LOCATION}:/data
+        #ports:
+        #- 8071:8071
+        #- 6881:6881
+        #- 6881:6881/udp
+        restart: unless-stopped
+
+    radarr:
+        image: lscr.io/linuxserver/radarr
+        container_name: radarr
+        restart: unless-stopped
+        network_mode: "service:gluetun" # Routes all traffic through Gluetun
+        depends_on:
+            - gluetun
+        # ports:
+        #   - 7878:7878
+        environment:
+            - PUID=1000
+            - PGID=1000
+            - TZ=${TIMEZONE}
+        volumes:
+            - ./radarr:/config
+            - ${DATA_LOCATION}:/data
+
+    sonarr:
+        image: lscr.io/linuxserver/sonarr
+        container_name: sonarr
+        restart: unless-stopped
+        network_mode: "service:gluetun" # Routes all traffic through Gluetun
+        depends_on:
+            - gluetun
+        # ports:
+        #   - 8989:8989
+        environment:
+            - PUID=1000
+            - PGID=1000
+            - TZ=${TIMEZONE}
+        volumes:
+            - ./sonarr:/config
+            - ${DATA_LOCATION}:/data
+
+    lidarr:
+        image: lscr.io/linuxserver/lidarr:latest
+        container_name: lidarr
+        network_mode: "service:gluetun" # Routes all traffic through Gluetun
+        depends_on:
+            - gluetun
+        # ports:
+        #   - 8686:8686
+        environment:
+            - PUID=1000
+            - PGID=1000
+            - TZ=${TIMEZONE}
+        volumes:
+            - ./lidarr:/config
+            - ${DATA_LOCATION}:/data
+        restart: unless-stopped
+
+    bazarr:
+        image: lscr.io/linuxserver/bazarr
+        container_name: bazarr
+        restart: unless-stopped
+        network_mode: "service:gluetun" # Routes all traffic through Gluetun
+        depends_on:
+            - gluetun
+        # ports:
+        #   - 6767:6767
+        environment:
+            - PUID=1000
+            - PGID=1000
+            - TZ=${TIMEZONE}
+        volumes:
+            - ./bazarr:/config
+            - ${DATA_LOCATION}:/data
+
+    prowlarr:
+        image: lscr.io/linuxserver/prowlarr
+        container_name: prowlarr
+        restart: unless-stopped
+        network_mode: "service:gluetun" # Routes all traffic through Gluetun
+        depends_on:
+            - gluetun
+        # ports:
+        #   - 9696:9696
+        environment:
+            - PUID=1000
+            - PGID=1000
+            - TZ=${TIMEZONE}
+        volumes:
+            - ./prowlarr:/config
+
+    flaresolverr:
+        image: ghcr.io/flaresolverr/flaresolverr:latest
+        container_name: flaresolverr
+        network_mode: "service:gluetun" # Routes all traffic through Gluetun
+        environment:
+            - TZ=${TIMEZONE}
+        depends_on:
+            - gluetun
+        # ports:
+        #   - 8191:8191
+        restart: unless-stopped
+
+    #jellyseerr:
+    #image: fallenbagel/jellyseerr:latest
+    #container_name: jellyseerr
+    #environment:
+    #- TZ=${TIMEZONE}
+    #- LOG_LEVEL=info
+    #ports:
+    #- "5055:5055"
+    #volumes:
+    #- ./jellyseerr:/app/config
+    #restart: unless-stopped
+    #Qdepends_on:
+    #- gluetun
+    #- jellyfin
+    #- sonarr
+    #- radarr

@@ -1,0 +1,13 @@
+[Unit]
+Description=Permanent Tailscale NFS Mount
+After=network-online.target tailscaled.service
+Wants=network-online.target tailscaled.service
+
+[Mount]
+What=100.117.236.5:/mnt/data
+Where=/mnt/data
+Type=nfs
+Options=_netdev,rw,soft,timeo=14,retrans=2,nfsvers=4
+
+[Install]
+WantedBy=multi-user.target

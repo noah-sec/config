@@ -1,0 +1,11 @@
+.env
+jellyfin-cache
+jellyfin-config
+gluetun
+qbittorrent
+sonarr
+radarr
+lidarr
+prowlarr
+bazarr
+jellyseerr
