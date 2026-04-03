@@ -20,10 +20,15 @@ services:
             # Helps Jellyfin handle the proxy headers from tsdproxy
             - JELLYFIN_ReverseProxyClientIPHeader=X-Forwarded-For
             - /dev/dri:/dev/dri
+        networks:
+            - tsbridge-network
+        labels:
+            - "tsbridge.enabled=true"
+            - "tsbridge.service.port=8096"
 
     gluetun:
         image: qmcgaw/gluetun
-        # container_name: gluetun
+        container_name: gluetun
         # line above must be uncommented to allow external containers to connect.
         # See https://github.com/qdm12/gluetun-wiki/blob/main/setup/connect-a-container-to-gluetun.md#external-container-to-gluetun
         cap_add:
@@ -58,6 +63,8 @@ services:
             # Server list updater
             # See https://github.com/qdm12/gluetun-wiki/blob/main/setup/servers.md#update-the-vpn-servers-list
             #- UPDATER_PERIOD=
+        networks:
+            - tsbridge-network
 
     qbittorrent:
         image: lscr.io/linuxserver/qbittorrent:latest
@@ -79,6 +86,9 @@ services:
         #- 6881:6881
         #- 6881:6881/udp
         restart: unless-stopped
+        labels:
+            - "tsbridge.enabled=true"
+            - "tsbridge.service.backend_addr=gluetun:8071"
 
     radarr:
         image: lscr.io/linuxserver/radarr
@@ -96,6 +106,9 @@ services:
         volumes:
             - ./radarr:/config
             - ${DATA_LOCATION}:/data
+        labels:
+            - "tsbridge.enabled=true"
+            - "tsbridge.service.backend_addr=gluetun:7878"
 
     sonarr:
         image: lscr.io/linuxserver/sonarr
@@ -113,6 +126,9 @@ services:
         volumes:
             - ./sonarr:/config
             - ${DATA_LOCATION}:/data
+        labels:
+            - "tsbridge.enabled=true"
+            - "tsbridge.service.backend_addr=gluetun:8989"
 
     lidarr:
         image: lscr.io/linuxserver/lidarr:latest
@@ -130,6 +146,9 @@ services:
             - ./lidarr:/config
             - ${DATA_LOCATION}:/data
         restart: unless-stopped
+        labels:
+            - "tsbridge.enabled=true"
+            - "tsbridge.service.backend_addr=gluetun:8686"
 
     bazarr:
         image: lscr.io/linuxserver/bazarr
@@ -147,6 +166,9 @@ services:
         volumes:
             - ./bazarr:/config
             - ${DATA_LOCATION}:/data
+        labels:
+            - "tsbridge.enabled=true"
+            - "tsbridge.service.backend_addr=gluetun:6767"
 
     prowlarr:
         image: lscr.io/linuxserver/prowlarr
@@ -163,6 +185,9 @@ services:
             - TZ=${TIMEZONE}
         volumes:
             - ./prowlarr:/config
+        labels:
+            - "tsbridge.enabled=true"
+            - "tsbridge.service.backend_addr=gluetun:9696"
 
     flaresolverr:
         image: ghcr.io/flaresolverr/flaresolverr:latest
@@ -175,6 +200,9 @@ services:
         # ports:
         #   - 8191:8191
         restart: unless-stopped
+        labels:
+            - "tsbridge.enabled=true"
+            - "tsbridge.service.backend_addr=gluetun:8191"
 
     jellyseerr:
         image: fallenbagel/jellyseerr:latest
@@ -192,3 +220,12 @@ services:
             - jellyfin
             - sonarr
             - radarr
+        networks:
+            - tsbridge-network
+        labels:
+            - "tsbridge.enabled=true"
+            - "tsbridge.service.port=5055"
+
+networks:
+    tsbridge-network:
+        external: true

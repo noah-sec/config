@@ -11,5 +11,6 @@ services:
             - TSIDP_ENABLE_STS=1 # Enable OAuth token exchange
             # Optional: Tailscale auth key for automatic node registration
             - TS_AUTHKEY=${TS_AUTHKEY}
+        restart: unless-stopped
 volumes:
     tsidp-data:
