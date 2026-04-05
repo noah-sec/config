@@ -41,9 +41,12 @@ services:
             # - /path/to/root_ca.crt:/usr/local/share/ca-certificates/root_ca.crt
         networks:
             - tsbridge-network
+        dns:
+            - 100.100.100.100
         labels:
             - "tsbridge.enabled=true"
             - "tsbridge.service.port=9120"
+            - "tsbridge.service.tags=tag:server,tag:container,tag:komodo"
 
     ## Deploy Periphery container using this block,
     ## or deploy the Periphery binary with systemd using

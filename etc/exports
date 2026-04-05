@@ -1,1 +1,3 @@
 /mnt/data *(rw,sync,no_subtree_check,no_root_squash,insecure)
+/mnt/crypt *(rw,async,no_subtree_check,no_root_squash,insecure)
+rw,async,hard,intr,rsize=1048576,wsize=1048576,nolock

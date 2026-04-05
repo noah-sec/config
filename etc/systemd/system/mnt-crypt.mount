@@ -1,0 +1,14 @@
+[Unit]
+Description=Permanent Tailscale NFS Mount (Encrypted)
+After=network-online.target tailscaled.service
+Wants=network-online.target tailscaled.service
+
+[Mount]
+What=100.117.236.5:/mnt/crypt
+Where=/mnt/crypt
+Type=nfs
+# Optimized for Tailscale + Large Data
+Options=_netdev,rw,hard,intr,timeo=600,retrans=3,nfsvers=4.2,rsize=1048576,wsize=1048576,async
+
+[Install]
+WantedBy=multi-user.target

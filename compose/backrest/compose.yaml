@@ -1,0 +1,40 @@
+services:
+    backrest:
+        image: ghcr.io/garethgeorge/backrest:latest
+        container_name: backrest
+        hostname: backrest
+        volumes:
+            - ./data:/data
+            - ./config:/config
+            - ./cache:/cache
+            - ./tmp:/tmp
+            - ./rclone:/root/.config/rclone # Mount for rclone config (needed when using rclone remotes)
+            #- /mnt/data/backup:/userdata  # Mount local paths to backup
+            - /etc/komodo:/userdata/docker/komodo-backup:ro
+            - /home/noah/iac/config:/userdata/config:ro
+            - /mnt/data/git:/userdata/git:ro
+            - /mnt/data/s3:/userdata/s3:ro
+            - /mnt/data/documents:/userdata/documents:ro
+            - /mnt/data/media/books:/userdata/books:ro
+            - /mnt/data/media/photos:/userdata/photos:ro
+            - /mnt/crypt:/userdata/crypt:ro
+            - /mnt/data/backup/repos:/repos # Mount local repos (optional for remote storage)
+        environment:
+            - BACKREST_DATA=/data
+            - BACKREST_CONFIG=/config/config.json
+            - XDG_CACHE_HOME=/cache
+            - TMPDIR=/tmp
+            - TZ=America/Los_Angeles
+        #ports:
+        #- "9898:9898"
+        networks:
+            - tsbridge-network
+        labels:
+            - "tsbridge.enabled=true"
+            - "tsbridge.service.port=9898"
+            - "tsbridge.service.tags=tag:server,tag:container,tag:backrest"
+        restart: unless-stopped
+
+networks:
+    tsbridge-network:
+        external: true

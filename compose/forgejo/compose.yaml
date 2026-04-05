@@ -16,7 +16,7 @@ services:
             - TS_AUTHKEY=${TS_AUTHKEY}
             - TS_STATE_DIR=/var/lib/tailscale
             - TS_SERVE_CONFIG=/config/serve.json
-            - TS_EXTRA_ARGS=--advertise-tags=tag:server,tag:container --ssh=false
+            - TS_EXTRA_ARGS=--advertise-tags=tag:server,tag:container,tag:forgejo --ssh=false
         volumes:
             - ./ts-state:/var/lib/tailscale
         configs:
@@ -27,6 +27,8 @@ services:
         cap_add:
             - NET_ADMIN
             - SYS_MODULE
+        networks:
+            - tsbridge-network
         restart: unless-stopped
 
     forgejo:
@@ -47,3 +49,7 @@ services:
         #   - '3000:3000'
         #   - '222:22'
         restart: unless-stopped
+
+networks:
+    tsbridge-network:
+        external: true
