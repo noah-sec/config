@@ -1,0 +1,16 @@
+---
+all:
+  hosts:
+    debian-nas:
+      ansible_host: debian-nas.tail158093.ts.net
+      ansible_user: noah
+      ansible_become: yes
+      ansible_become_method: sudo
+    debian-docker:
+      ansible_host: debian-docker.tail158093.ts.net
+      ansible_user: noah
+      ansible_become: yes
+      ansible_become_method: sudo
+
+  vars:
+    ansible_ssh_extra_args: '-vvvv'

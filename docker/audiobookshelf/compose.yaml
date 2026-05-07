@@ -1,0 +1,24 @@
+services:
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: audiobookshelf
+    hostname: audiobookshelf
+    ports:
+      - 13378:80
+    volumes:
+      - /mnt/data/media/audiobooks:/audiobooks
+      - /mnt/data/media/podcasts:/podcasts
+      - ./config:/config
+      - ./metadata:/metadata
+    environment:
+      - TZ=America/Los_Angeles
+    networks:
+      - tsbridge-network
+    labels:
+      - "tsbridge.enabled=true"
+      - "tsbridge.service.port=80"
+    restart: unless-stopped
+
+networks:
+    tsbridge-network:
+        external: true

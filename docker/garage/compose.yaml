@@ -1,0 +1,18 @@
+services:
+    garage:
+        image: dxflrs/garage:v2.1.0
+        container_name: garage
+        volumes:
+            - "./garage.toml:/etc/garage.toml:ro"
+            - "/mnt/data/s3:/var/lib/garage/data"
+            - "./meta:/var/lib/garage/meta"
+        restart: unless-stopped
+        networks:
+            - tsbridge-network
+        labels:
+            - "tsbridge.enabled=true"
+            - "tsbridge.service.port=3900"
+
+networks:
+    tsbridge-network:
+        external: true
